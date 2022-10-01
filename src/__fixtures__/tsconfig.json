@@ -1,0 +1,4 @@
+{
+  "files": [],
+  "references": [{ "path": "src/__fixtures__" }, { "path": "src/__test__" }]
+}

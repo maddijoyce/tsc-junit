@@ -1,6 +1,7 @@
 import ts, { ModuleKind, ModuleResolutionKind, ScriptTarget } from 'typescript';
 import path from 'path';
 import { parseStdin } from '../junit';
+import { loadConfig } from '../config';
 
 function getDiagnosticResult() {
   const program = ts.createProgram([path.resolve(__dirname, '../__fixtures__/input.ts')], {
@@ -21,6 +22,22 @@ function getDiagnosticResult() {
     getNewLine: () => ts.sys.newLine,
   });
 }
+
+it('correctly parses success', () => {
+  const result = parseStdin('');
+
+  expect(result.suites.length).toBe(1);
+  expect(result.suites[0].testCases).toEqual([]);
+});
+
+it('uses config file with success', async () => {
+  const config = await loadConfig('./src/__fixtures__/tsconfig.json');
+  const result = parseStdin('', config);
+
+  expect(result.suites.length).toBe(2);
+  expect(result.suites[0].testCases).toEqual([]);
+  expect(result.suites[1].testCases).toEqual([]);
+});
 
 it('correctly parses errors', () => {
   const stdin = getDiagnosticResult();
@@ -70,4 +87,13 @@ it('correctly parses errors', () => {
       ],
     },
   ]);
+});
+
+it('uses config file with errors', async () => {
+  const config = await loadConfig('./src/__fixtures__/tsconfig.json');
+  const result = parseStdin(getDiagnosticResult(), config);
+
+  expect(result.suites.length).toBe(2);
+  expect(result.suites[0].testCases).toHaveLength(4);
+  expect(result.suites[1].testCases).toHaveLength(0);
 });
